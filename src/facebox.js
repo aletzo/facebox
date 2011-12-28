@@ -69,7 +69,8 @@
   $.facebox = function(data, klass) {
     $.facebox.loading(data.settings || [])
 
-    if (data.ajax) fillFaceboxFromAjax(data.ajax, klass)
+    if (data.iframe) fillFaceboxFromIframe(data.div, klass)
+    else if (data.ajax) fillFaceboxFromAjax(data.ajax, klass)
     else if (data.image) fillFaceboxFromImage(data.image, klass)
     else if (data.div) fillFaceboxFromHref(data.div, klass)
     else if ($.isFunction(data)) data.call($)
@@ -87,6 +88,9 @@
       loadingImage : '/facebox/loading.gif',
       closeImage   : '/facebox/closelabel.png',
       imageTypes   : [ 'png', 'jpg', 'jpeg', 'gif' ],
+      iframe       : false,
+      iframeHeight : 400,
+      iframeWidth  : 550,
       faceboxHtml  : '\
     <div id="facebox" style="display:none;"> \
       <div class="popup"> \
@@ -235,8 +239,13 @@
   //   image: blah.extension
   //    ajax: anything else
   function fillFaceboxFromHref(href, klass) {
+
+    // iframe
+    if ($.facebox.settings.iframe === true) {
+        fillFaceboxFromIframe(href, klass)
+
     // div
-    if (href.match(/#/)) {
+    } else if (href.match(/#/)) {
       var url    = window.location.href.split('#')[0]
       var target = href.replace(url,'')
       if (target == '#') return
@@ -245,6 +254,7 @@
     // image
     } else if (href.match($.facebox.settings.imageTypesRegexp)) {
       fillFaceboxFromImage(href, klass)
+    
     // ajax
     } else {
       fillFaceboxFromAjax(href, klass)
@@ -261,6 +271,10 @@
 
   function fillFaceboxFromAjax(href, klass) {
     $.facebox.jqxhr = $.get(href, function(data) { $.facebox.reveal(data, klass) })
+  }
+
+  function fillFaceboxFromIframe(href, klass) {
+    $.facebox.reveal('<iframe scrolling="no" marginwidth="0" width="' + $.facebox.settings.iframeWidth + '" height="' + $.facebox.settings.iframeHeight + '" frameborder="0" src="' + href + '" marginheight="0"></iframe>', klass)
   }
 
   function skipOverlay() {
